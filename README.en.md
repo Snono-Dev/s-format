@@ -29,10 +29,10 @@ A free file encryption tool that runs entirely in your browser. All operations h
 | Feature | Details |
 |---------|---------|
 | Encryption | AES-256-GCM (Military-grade) |
-| Key Derivation | PBKDF2 with 500,000 iterations |
+| Key Derivation | Argon2id with PBKDF2 fallback |
 | Salt | 32 bytes random per encryption |
-| IV | 12 bytes random |
-| Folders | ZIP compression before encryption |
+| IV | 12 bytes random per chunk |
+| Folders | Each file encrypted separately, no ZIP compression |
 | Languages | Arabic + English |
 | Server | None — works entirely in the browser |
 
@@ -78,26 +78,30 @@ cd s-format
 ## How Encryption Works
 
 ```
-Original File
+Original File/Folder
     ↓
-Import key from password (PBKDF2 + Salt)
+Derive key from password (Argon2id + Salt)
     ↓
-Encrypt with AES-256-GCM using random IV
+Split file into 1MB chunks
     ↓
-Output file format:
-┌────────┬──────────┬──────────┬──────────┬───────┬─────┬────────────┐
-│ MAGIC  │ VERSION  │ NAME_LEN │ FILENAME │ SALT  │ IV  │ ENCRYPTED  │
-│ 4 byte │ 4 byte   │ 4 byte   │ variable │32 byte│12 B │ variable   │
-└────────┴──────────┴──────────┴──────────┴───────┴─────┴────────────┘
+Encrypt each chunk with AES-256-GCM + random IV
     ↓
-Encrypted File (.s)
+Output file format (.s):
+┌─────────┬─────────┬───────────┬─────────┬─────┬──────────────────┐
+│  MAGIC  │ VERSION │ FILE_COUNT│  SALT   │ IV  │  ENCRYPTED DATA  │
+│ 4 byte  │ 4 byte  │  4 byte   │ 32 byte │12 B │   (per file)     │
+└─────────┴─────────┴───────────┴─────────┴─────┴──────────────────┘
+
+Note: Files are stored individually inside the container
+without ZIP compression — ZIP is only used during download
+as a workaround since browsers don't support folder downloads.
 ```
 
 ## Security
 
 - No server — everything happens in the browser
 - AES-256-GCM with authenticated encryption
-- PBKDF2 with 500,000 iterations against dictionary attacks
+- Argon2id for dictionary and quantum attack resistance
 - Random salt and IV unique per encryption
 - No passwords are ever stored
 
