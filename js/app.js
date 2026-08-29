@@ -274,7 +274,8 @@ async function decryptFile() {
         resetProgress('decrypt');
 
     } catch (err) {
-        alert(t('err_decrypt'));
+        console.error('Decrypt error:', err);
+        alert(t('err_decrypt') + '\n' + (err.message || ''));
     }
 
     btn.disabled = false;

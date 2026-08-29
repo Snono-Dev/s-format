@@ -121,12 +121,44 @@ function readUint64(view, offset) {
     return high * 0x100000000 + low;
 }
 
+async function deriveKeyForVersion(password, salt, version) {
+    if (version >= 4) {
+        const argon2 = await loadArgon2();
+        if (argon2) {
+            const enc = new TextEncoder();
+            const pwBytes = enc.encode(password);
+            const hash = argon2.hash(pwBytes, salt, ARGON2_TIME, ARGON2_MEM, ARGON2_THREADS, KEY_LEN);
+            const keyMaterial = await crypto.subtle.importKey(
+                'raw', hash, 'HKDF', false, ['deriveKey']
+            );
+            return crypto.subtle.deriveKey(
+                { name: 'HKDF', hash: 'SHA-256', salt, info: enc.encode('AES-GCM') },
+                keyMaterial,
+                { name: 'AES-GCM', length: KEY_LEN * 8 },
+                false,
+                ['encrypt', 'decrypt']
+            );
+        }
+    }
+    const enc = new TextEncoder();
+    const keyMaterial = await crypto.subtle.importKey(
+        'raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']
+    );
+    return crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
+        keyMaterial,
+        { name: 'AES-GCM', length: KEY_LEN * 8 },
+        false,
+        ['encrypt', 'decrypt']
+    );
+}
+
 async function encryptData(filesArray, password, onProgress) {
     const enc = new TextEncoder();
     const salt = crypto.getRandomValues(new Uint8Array(SALT_LEN));
     const key = await deriveKey(password, salt);
 
-    const headerSize = MAGIC.length + 4 + 4 + 4 + SALT_LEN;
+    const headerSize = MAGIC.length + 4 + 4 + SALT_LEN;
     const headerBuf = new ArrayBuffer(headerSize);
     const headerView = new DataView(headerBuf);
     const headerBytes = new Uint8Array(headerBuf);
@@ -159,7 +191,7 @@ async function encryptData(filesArray, password, onProgress) {
         parts.push(metaBytes);
         totalSize += metaSize;
 
-        const totalChunks = Math.ceil(fileSize / CHUNK_SIZE) || 1;
+        const totalChunks = fileSize === 0 ? 0 : Math.ceil(fileSize / CHUNK_SIZE);
 
         for (let ci = 0; ci < totalChunks; ci++) {
             const start = ci * CHUNK_SIZE;
@@ -196,13 +228,13 @@ async function encryptData(filesArray, password, onProgress) {
 
 async function decryptData(fileObj, password, onProgress) {
     const fileSize = fileObj.size;
-    const MIN_HEADER = MAGIC.length + 4 + 4 + 4 + SALT_LEN;
+    const HEADER_SIZE = MAGIC.length + 4 + 4 + SALT_LEN;
 
-    if (fileSize < MIN_HEADER) {
+    if (fileSize < HEADER_SIZE) {
         throw new Error('الملف ليس بامتداد .s صالح');
     }
 
-    const headerBuf = await fileObj.slice(0, MIN_HEADER).arrayBuffer();
+    const headerBuf = await fileObj.slice(0, HEADER_SIZE).arrayBuffer();
     const headerView = new DataView(headerBuf);
     const headerBytes = new Uint8Array(headerBuf);
     let hOff = 0;
@@ -216,14 +248,20 @@ async function decryptData(fileObj, password, onProgress) {
     const fileCount = readUint32(headerView, hOff); hOff += 4;
     const salt = headerBytes.slice(hOff, hOff + SALT_LEN); hOff += SALT_LEN;
 
+    const checkBuf = await fileObj.slice(hOff, hOff + 4).arrayBuffer();
+    const checkBytes = new Uint8Array(checkBuf);
+    let readOffset = hOff;
+    if (checkBytes[0] === 0 && checkBytes[1] === 0 && checkBytes[2] === 0 && checkBytes[3] === 0 && fileCount > 0) {
+        readOffset += 4;
+    }
+
     if (onProgress) onProgress(5);
 
-    const key = await deriveKey(password, salt);
+    const key = await deriveKeyForVersion(password, salt, version);
 
     if (onProgress) onProgress(10);
 
     const decryptedFiles = [];
-    let readOffset = hOff;
 
     for (let fi = 0; fi < fileCount; fi++) {
         const metaBuf = await fileObj.slice(readOffset, readOffset + 4).arrayBuffer();
