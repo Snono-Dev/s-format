@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a1628">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <title>.s — مشفّر الملفات | File Encryptor — AES-256-GCM</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <meta name="description" content="تشفير وفك تشفير الملفات مباشرة في المتصفح باستخدام AES-256-GCM و Argon2id. لا سيرفرات، خصوصية تامة. Encrypt and decrypt files in your browser with military-grade encryption.">
+    <meta name="keywords" content="تشفير ملفات, file encryptor, AES-256, تشفير, فك تشفير, ملفات مشفرة, file encryption, online encryptor, تشفير اون لاين, argon2id, خصوصية, privacy, سحابة, github pages">
+    <meta name="author" content="Snono-Dev">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://snono-dev.github.io/s-format/">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content=".s — مشفّر الملفات | File Encryptor">
+    <meta property="og:description" content="تشفير وفك تشفير الملفات مباشرة في المتصفح باستخدام AES-256-GCM و Argon2id. لا سيرفرات، خصوصية تامة.">
+    <meta property="og:url" content="https://snono-dev.github.io/s-format/">
+    <meta property="og:site_name" content=".s File Encryptor">
+    <meta property="og:locale" content="ar_AR">
+    <meta property="og:locale:alternate" content="en_US">
+    <meta property="og:image" content="https://snono-dev.github.io/s-format/logo-og.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content=".s — مشفّر الملفات | File Encryptor">
+    <meta name="twitter:description" content="تشفير وفك تشفير الملفات مباشرة في المتصفح. AES-256-GCM + Argon2id. لا سيرفرات.">
+    <meta name="twitter:image" content="https://snono-dev.github.io/s-format/logo-og.png">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": ".s File Encryptor",
+        "alternateName": "مشفر الملفات",
+        "description": "Free browser-based file encryption tool using AES-256-GCM and Argon2id. No server required.",
+        "url": "https://snono-dev.github.io/s-format/",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "featureList": [
+            "AES-256-GCM encryption",
+            "Argon2id key derivation",
+            "No server required",
+            "Folder support",
+            "Arabic and English"
+        ]
+    }
+    </script>
+
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+    <div class="bg-glow"></div>
+
+    <div class="container">
+        <header>
+            <div class="top-bar">
+                <a href="https://github.com/Snono-Dev/s-format" target="_blank" class="github-link" title="GitHub">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                </a>
+                <div class="lang-switch">
+                    <button class="lang-btn active" onclick="setLang('ar')">AR</button>
+                    <button class="lang-btn" onclick="setLang('en')">EN</button>
+                </div>
+            </div>
+            <div class="logo">
+                <img src="logo.png" alt=".s Logo" class="logo-img">
+            </div>
+            <h1 data-i18n="title">File Encryptor</h1>
+            <p class="subtitle" data-i18n="subtitle">تشفير وفك تشفير الملفات بأمان تام باستخدام AES-256-GCM</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('encrypt')">
+                <span class="tab-icon">&#128274;</span> <span data-i18n="tab_encrypt">تشفير</span>
+            </button>
+            <button class="tab" onclick="switchTab('decrypt')">
+                <span class="tab-icon">&#128275;</span> <span data-i18n="tab_decrypt">فك التشفير</span>
+            </button>
+        </div>
+
+        <!-- Encrypt Panel -->
+        <div class="panel active" id="encrypt-panel">
+            <div class="card">
+                <div class="drop-zone" id="encrypt-drop-zone">
+                    <span class="drop-zone-icon">&#128194;</span>
+                    <h3 data-i18n="drop_encrypt_h">اسحب الملفات أو المجلدات هنا</h3>
+                    <p data-i18n="drop_encrypt_p">أو انقر لاختيار ملف / مجلد — جميع الأنواع مدعومة</p>
+                    <div class="drop-zone-btns">
+                        <button class="drop-zone-btn" onclick="document.getElementById('encrypt-file-input').click()">
+                            &#128196; <span data-i18n="select_files">اختيار ملفات</span>
+                        </button>
+                        <button class="drop-zone-btn" onclick="document.getElementById('encrypt-folder-input').click()">
+                            &#128193; <span data-i18n="select_folder">اختيار مجلد</span>
+                        </button>
+                    </div>
+                </div>
+                <input type="file" class="file-input" id="encrypt-file-input" multiple>
+                <input type="file" class="file-input" id="encrypt-folder-input" webkitdirectory>
+
+                <div class="file-info" id="encrypt-file-info">
+                    <span class="file-info-icon">&#128196;</span>
+                    <div class="file-info-text">
+                        <div class="file-info-name" id="encrypt-file-name"></div>
+                        <div class="file-info-size" id="encrypt-file-size"></div>
+                    </div>
+                    <button class="remove-file" onclick="clearEncryptFile()">&#10006;</button>
+                </div>
+
+                <div class="password-group">
+                    <label>&#128273; <span data-i18n="password">كلمة المرور</span></label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="encrypt-password" data-i18n-placeholder="password_placeholder" placeholder="أدخل كلمة مرور قوية" oninput="checkStrength(this.value)">
+                        <button class="toggle-password" onclick="togglePassword('encrypt-password', this)">&#128065;</button>
+                    </div>
+                    <div class="password-strength">
+                        <div class="password-strength-bar" id="strength-bar"></div>
+                    </div>
+                    <div class="strength-text" id="strength-text"></div>
+                </div>
+
+                <div class="password-group">
+                    <label>&#128273; <span data-i18n="password_confirm">تأكيد كلمة المرور</span></label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="encrypt-password-confirm" data-i18n-placeholder="password_confirm_placeholder" placeholder="أعد إدخال كلمة المرور">
+                        <button class="toggle-password" onclick="togglePassword('encrypt-password-confirm', this)">&#128065;</button>
+                    </div>
+                </div>
+
+                <button class="btn btn-encrypt" id="encrypt-btn" onclick="encryptFile()" disabled>
+                    <span class="btn-icon">&#128274;</span>
+                    <span data-i18n="btn_encrypt">تشفير الملف</span>
+                </button>
+
+                <div class="progress-container" id="encrypt-progress">
+                    <div class="progress-info">
+                        <span data-i18n="progress_encrypt" id="encrypt-progress-text">جاري التشفير...</span>
+                        <span id="encrypt-progress-percent">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="encrypt-progress-fill"></div>
+                    </div>
+                </div>
+
+                <div class="result" id="encrypt-result">
+                    <span class="result-icon">&#9989;</span>
+                    <h4 data-i18n="result_encrypt_h">تم التشفير بنجاح!</h4>
+                    <p data-i18n="result_encrypt_p">الملف جاهز للتحميل بامتداد .s</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Decrypt Panel -->
+        <div class="panel" id="decrypt-panel">
+            <div class="card">
+                <div class="drop-zone" id="decrypt-drop-zone" onclick="document.getElementById('decrypt-file-input').click()">
+                    <span class="drop-zone-icon">&#128275;</span>
+                    <h3 data-i18n="drop_decrypt_h">اسحب الملف المشفر هنا</h3>
+                    <p data-i18n="drop_decrypt_p">أو انقر لاختيار ملف بامتداد .s</p>
+                </div>
+                <input type="file" class="file-input" id="decrypt-file-input" accept=".s">
+
+                <div class="file-info" id="decrypt-file-info">
+                    <span class="file-info-icon">&#128273;</span>
+                    <div class="file-info-text">
+                        <div class="file-info-name" id="decrypt-file-name"></div>
+                        <div class="file-info-size" id="decrypt-file-size"></div>
+                    </div>
+                    <button class="remove-file" onclick="clearDecryptFile()">&#10006;</button>
+                </div>
+
+                <div class="password-group">
+                    <label>&#128273; <span data-i18n="password">كلمة المرور</span></label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="decrypt-password" data-i18n-placeholder="password_placeholder" placeholder="أدخل كلمة مرور فك التشفير">
+                        <button class="toggle-password" onclick="togglePassword('decrypt-password', this)">&#128065;</button>
+                    </div>
+                </div>
+
+                <button class="btn btn-decrypt" id="decrypt-btn" onclick="decryptFile()" disabled>
+                    <span class="btn-icon">&#128275;</span>
+                    <span data-i18n="btn_decrypt">فك التشفير</span>
+                </button>
+
+                <div class="progress-container" id="decrypt-progress">
+                    <div class="progress-info">
+                        <span data-i18n="progress_decrypt" id="decrypt-progress-text">جاري فك التشفير...</span>
+                        <span id="decrypt-progress-percent">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="decrypt-progress-fill"></div>
+                    </div>
+                </div>
+
+                <div class="result" id="decrypt-result">
+                    <span class="result-icon">&#9989;</span>
+                    <h4 data-i18n="result_decrypt_h">تم فك التشفير بنجاح!</h4>
+                    <p data-i18n="result_decrypt_p">الملف جاهز للتحميل</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <span class="feature-icon">&#128737;</span>
+                <h5>AES-256-GCM</h5>
+                <p data-i18n="feat1">التشفير العسكري الأقوى</p>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">&#127760;</span>
+                <h5 data-i18n="feat2_h">كل شيء في المتصفح</h5>
+                <p data-i18n="feat2_p">لا يتم إرسال أي بيانات</p>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">&#128194;</span>
+                <h5 data-i18n="feat3_h">جميع الملفات</h5>
+                <p data-i18n="feat3_p">ملفات ومجلدات بلا حدود</p>
+            </div>
+        </div>
+
+        <div class="crypto-info">
+            <h4>&#128737; <span data-i18n="crypto_title">معلومات التشفير</span></h4>
+            <div class="crypto-details">
+                <div class="crypto-item"><span data-i18n="crypto_algo">الخوارزمية:</span> AES-256-GCM</div>
+                <div class="crypto-item"><span data-i18n="crypto_key">المفتاح:</span> Argon2id</div>
+                <div class="crypto-item"><span data-i18n="crypto_iters">الذاكرة:</span> 64 MB</div>
+                <div class="crypto-item"><span data-i18n="crypto_salt">الملح:</span> 32 bytes</div>
+                <div class="crypto-item"><span data-i18n="crypto_chunk">حجم الجزء:</span> 1 MB</div>
+                <div class="crypto-item"><span data-i18n="crypto_version">الإصدار:</span> v4</div>
+                <div class="crypto-item"><span data-i18n="crypto_quantum">مقاومة كمومية:</span> Argon2id + AES-256</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div data-i18n="footer">صُنع بـ <span>&#10084;</span> في بلاد الرافدين — حماية خصوصيتك</div>
+        </div>
+    </div>
+
+    <script src="js/i18n.js"></script>
+    <script src="js/crypto.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
